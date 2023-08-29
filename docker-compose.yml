@@ -1,0 +1,79 @@
+version: '3'
+services:
+
+  #Laravel App
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    image: sender_net/laravel
+    container_name: sender_app
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - sender_app
+
+  #Nginx Service
+  nginx:
+    image: nginx:latest
+    container_name: sender_nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8000:80"
+      # - "443:443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./docker/nginx/log/:/var/log/nginx/
+    networks:
+      - sender_app
+    depends_on:
+      - app
+
+  db:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+    networks:
+          - sender_app
+
+  #Redis Service
+  redis:
+    image: "redislabs/rejson:latest"
+    command: redis-server
+    container_name: sender_redis
+    ports:
+      - "6382:6379"
+    volumes:
+      - ./docker/redis/data:/var/lib/redis
+      - ./docker/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - sender_app
+
+#Docker Networks
+networks:
+  sender_app:
+    name: sender_app
+    driver: bridge
+    
+#Volumes
+volumes:
+  db:
+    driver: local

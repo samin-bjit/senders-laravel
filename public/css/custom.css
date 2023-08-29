@@ -1,0 +1,20 @@
+.custom-title h1 {
+    margin-top: 20px;
+    font-weight: 700;
+    font-family: 'Roboto';
+}
+.search-panel{
+    margin-top: 30px;
+}
+.custom-submit-search {
+    background-color: #FF8D00;
+    color: #fff;
+    font-weight: 700;
+}
+label{
+    color: #000 !important;
+    font-weight: 400 !important;
+}
+.pagination{
+    text-align: center !important;
+}
